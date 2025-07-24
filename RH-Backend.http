@@ -1,0 +1,6 @@
+@RH_Backend_HostAddress = http://localhost:5199
+
+GET {{RH_Backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
