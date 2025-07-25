@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
 using RH_Backend.Data;
 using RH_Backend.DTO;
 using RH_Backend.Models;
@@ -200,6 +201,63 @@ namespace RH_Backend.Controllers
             _appDbContext.Funcionarios.Remove(funcionarioExistente);
             await _appDbContext.SaveChangesAsync();
             return Ok(funcionarioExistente);
+        }
+
+        [HttpGet("Relatorio")]
+        public async Task<IActionResult> GerarRelatorioFuncionarios()
+        {
+            var funcionarios = await _appDbContext.Funcionarios
+                .Include(f => f.Cargo)
+                .ToListAsync();
+
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(20);
+                    page.Header().Text("Relatório de Funcionários").FontSize(20).Bold();
+                    page.Content().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            // Nome
+                            columns.RelativeColumn(2);
+                            // Cargo
+                            columns.RelativeColumn(2);
+                            // Data
+                            columns.RelativeColumn(2);
+                            // Salário
+                            columns.RelativeColumn(2);
+                            // Status
+                            columns.RelativeColumn(1);
+                        });
+
+                        table.Header(header =>
+                        {
+                            header.Cell().Text("Nome").Bold();
+                            header.Cell().Text("Cargo").Bold();
+                            header.Cell().Text("Data Admissão").Bold();
+                            header.Cell().Text("Salário").Bold();
+                            header.Cell().Text("Status").Bold();
+                        });
+
+                        foreach (var f in funcionarios)
+                        {
+                            table.Cell().Text(f.Nome);
+                            table.Cell().Text(f.Cargo?.Nome ?? "N/A");
+                            table.Cell().Text(f.DataAdmissao.ToString("dd/MM/yyyy"));
+                            table.Cell().Text(f.Cargo?.Salario.ToString("C", new System.Globalization.CultureInfo("pt-BR")));
+                            table.Cell().Text(f.Ativo ? "Ativo" : "Inativo");
+                        }
+                    });
+                });
+            });
+
+            var pdfStream = new MemoryStream();
+            document.GeneratePdf(pdfStream);
+            pdfStream.Position = 0;
+
+            return File(pdfStream, "application/pdf", "relatorio-funcionarios.pdf");
         }
     }
 }
