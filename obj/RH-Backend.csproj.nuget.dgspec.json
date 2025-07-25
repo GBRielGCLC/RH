@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Prova Técnica Prática\\RH-backend\\RH-Backend.csproj": {}
+    "c:\\Prova Técnica Prática\\RH-backend\\RH-Backend.csproj": {}
   },
   "projects": {
-    "C:\\Prova Técnica Prática\\RH-backend\\RH-Backend.csproj": {
+    "c:\\Prova Técnica Prática\\RH-backend\\RH-Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Prova Técnica Prática\\RH-backend\\RH-Backend.csproj",
+        "projectUniqueName": "c:\\Prova Técnica Prática\\RH-backend\\RH-Backend.csproj",
         "projectName": "RH-Backend",
-        "projectPath": "C:\\Prova Técnica Prática\\RH-backend\\RH-Backend.csproj",
+        "projectPath": "c:\\Prova Técnica Prática\\RH-backend\\RH-Backend.csproj",
         "packagesPath": "C:\\Users\\gabri\\.nuget\\packages\\",
-        "outputPath": "C:\\Prova Técnica Prática\\RH-backend\\obj\\",
+        "outputPath": "c:\\Prova Técnica Prática\\RH-backend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

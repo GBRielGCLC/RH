@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RH_Backend.Data;
@@ -10,6 +6,7 @@ using RH_Backend.Models;
 
 namespace RH_Backend.Controllers
 {
+    [Produces("application/json")]
     [ApiController]
     [Route("api/[controller]")]
     public class FeriasController : ControllerBase
@@ -22,7 +19,7 @@ namespace RH_Backend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetFerias()
+        public async Task<ActionResult<FeriasResponseDto>> Get()
         {
             var ferias = await _context.Ferias
                 .Include(f => f.Funcionario)
@@ -47,7 +44,7 @@ namespace RH_Backend.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddFerias(FeriasRequestDto dto)
+        public async Task<ActionResult<Ferias>> Post(FeriasPostDto dto)
         {
             if (!await _context.Funcionarios.AnyAsync(f => f.Id == dto.FuncionarioId))
                 return BadRequest("Funcionário não encontrado.");
@@ -65,10 +62,10 @@ namespace RH_Backend.Controllers
             return Ok(ferias);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateFerias(int id, FeriasRequestDto dto)
+        [HttpPut]
+        public async Task<ActionResult<Ferias>> Put(FeriasPutDto dto)
         {
-            var ferias = await _context.Ferias.FindAsync(id);
+            var ferias = await _context.Ferias.FindAsync(dto.Id);
             if (ferias == null) return NotFound();
 
             if (!await _context.Funcionarios.AnyAsync(f => f.Id == dto.FuncionarioId))
@@ -84,7 +81,7 @@ namespace RH_Backend.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFerias(int id)
+        public async Task<ActionResult<Ferias>> Delete(int id)
         {
             var ferias = await _context.Ferias.FindAsync(id);
             if (ferias == null) return NotFound();
@@ -92,7 +89,7 @@ namespace RH_Backend.Controllers
             _context.Ferias.Remove(ferias);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return Ok(ferias);
         }
     }
 }

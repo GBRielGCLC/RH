@@ -1,14 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RH_Backend.Data;
 using RH_Backend.Models;
+using RH_Backend.DTO;
 
 namespace RH_Backend.Controllers
 {
+    [Produces("application/json")]
     [ApiController]
     [Route("api/[controller]")]
     public class CargosController : ControllerBase
@@ -20,22 +18,28 @@ namespace RH_Backend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCargos()
+        public async Task<ActionResult<List<Cargo>>> Get()
         {
             var cargos = await _appDbContext.Cargos.ToListAsync();
             return Ok(cargos);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddCargo(Cargo cargo)
+        public async Task<ActionResult<Cargo>> Post(PostCargoDTO cargoDto)
         {
+            var cargo = new Cargo
+            {
+                Nome = cargoDto.Nome,
+                Salario = cargoDto.Salario
+            };
+
             _appDbContext.Cargos.Add(cargo);
             await _appDbContext.SaveChangesAsync();
             return Ok(cargo);
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateCargo(Cargo cargo)
+        public async Task<ActionResult<Cargo>> Put(Cargo cargo)
         {
             var cargoExistente = await _appDbContext.Cargos.FindAsync(cargo.Id);
 
@@ -44,11 +48,11 @@ namespace RH_Backend.Controllers
             _appDbContext.Entry(cargoExistente).CurrentValues.SetValues(cargo);
 
             await _appDbContext.SaveChangesAsync();
-            return NoContent();
+            return Ok(cargo);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCargo(int id)
+        public async Task<ActionResult<Cargo>> DeleteCargo(int id)
         {
             var cargoExistente = await _appDbContext.Cargos.FindAsync(id);
 
@@ -56,7 +60,7 @@ namespace RH_Backend.Controllers
 
             _appDbContext.Cargos.Remove(cargoExistente);
             await _appDbContext.SaveChangesAsync();
-            return NoContent();
+            return Ok(cargoExistente);
         }
     }
 }

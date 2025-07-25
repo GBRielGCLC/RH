@@ -1,16 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using RH_Backend.Models;
-
 namespace RH_Backend.DTO
 {
-    public class FeriasRequestDto
+    public class FeriasPostDto
     {
         public DateOnly DataInicio { get; set; }
         public DateOnly DataTermino { get; set; }
         public int FuncionarioId { get; set; }
+    }
+
+    public class FeriasPutDto : FeriasPostDto
+    {
+        public int Id { get; set; }
     }
 
     public class FuncionarioResumoDto

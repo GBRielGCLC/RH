@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "oXH47OZd8So=",
+  "dgSpecHash": "AZX9eEhK2oA=",
   "success": true,
-  "projectFilePath": "C:\\Prova Técnica Prática\\RH-backend\\RH-Backend.csproj",
+  "projectFilePath": "c:\\Prova Técnica Prática\\RH-backend\\RH-Backend.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\gabri\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\gabri\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

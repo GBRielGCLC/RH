@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RH_Backend.Data;
@@ -8,6 +6,7 @@ using RH_Backend.Models;
 
 namespace RH_Backend.Controllers
 {
+    [Produces("application/json")]
     [ApiController]
     [Route("api/[controller]")]
     public class FuncionariosController : ControllerBase
@@ -19,13 +18,14 @@ namespace RH_Backend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetFuncionarios()
+        public async Task<ActionResult<FuncionarioResponseGet>> Get()
         {
             var funcionarios = await _appDbContext.Funcionarios
                 .Include(f => f.Cargo)
                 .ToListAsync();
 
-            var funcionariosDto = funcionarios.Select(f => new FuncionarioResponseDto
+            var funcionariosDto = funcionarios.Select(f =>
+            new FuncionarioResponseDto
             {
                 Id = f.Id,
                 Nome = f.Nome,
@@ -39,11 +39,24 @@ namespace RH_Backend.Controllers
                 Ativo = f.Ativo
             });
 
-            return Ok(funcionariosDto);
+            var response = new FuncionarioResponseGet
+            {
+                Funcionarios = funcionariosDto,
+                QuantidadeFuncionarios = funcionariosDto.Count(),
+                QuantidadeFuncionariosAtivos = funcionarios.Count(f => f.Ativo),
+                QuantidadeFuncionariosInativos = funcionarios.Count(f => !f.Ativo),
+                MediaSalarial = funcionarios.Average(f => f.Cargo == null ? 0 : f.Cargo.Salario),
+                SalarioTotal = funcionarios.Sum(f =>
+                {
+                    return f.Cargo == null ? 0 : f.Cargo.Salario;
+                })
+            };
+
+            return Ok(response);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddFuncionario(FuncionarioPostDto dto)
+        public async Task<ActionResult<Funcionario>> Post(FuncionarioPostDto dto)
         {
             if (dto.CargoId != null)
             {
@@ -79,8 +92,7 @@ namespace RH_Backend.Controllers
         }
 
         [HttpPut]
-        [HttpPut]
-        public async Task<IActionResult> UpdateFuncionario(FuncionarioPutDto funcionario)
+        public async Task<ActionResult<FuncionarioPutDto>> Put(FuncionarioPutDto funcionario)
         {
             var funcionarioExistente = await _appDbContext.Funcionarios.FindAsync(funcionario.Id);
             if (funcionarioExistente == null) return NotFound();
@@ -105,19 +117,36 @@ namespace RH_Backend.Controllers
                     ValorNovo = funcionario.Nome,
                     DataAlteracao = agora
                 });
+
                 funcionarioExistente.Nome = funcionario.Nome;
             }
 
             if (funcionarioExistente.CargoId != funcionario.CargoId)
             {
+                string nomeCargoAntigo = "";
+                string nomeCargoNovo = "";
+
+                if (funcionarioExistente.CargoId != null)
+                {
+                    var cargoAntigo = await _appDbContext.Cargos.FindAsync(funcionarioExistente.CargoId);
+                    nomeCargoAntigo = cargoAntigo?.Nome ?? "";
+                }
+
+                if (funcionario.CargoId != null)
+                {
+                    var cargoNovo = await _appDbContext.Cargos.FindAsync(funcionario.CargoId);
+                    nomeCargoNovo = cargoNovo?.Nome ?? "";
+                }
+
                 historicos.Add(new HistoricoFuncionario
                 {
                     FuncionarioId = funcionarioExistente.Id,
-                    CampoAlterado = "CargoId",
-                    ValorAntigo = funcionarioExistente.CargoId?.ToString() ?? "null",
-                    ValorNovo = funcionario.CargoId?.ToString() ?? "null",
+                    CampoAlterado = "Cargo",
+                    ValorAntigo = nomeCargoAntigo,
+                    ValorNovo = nomeCargoNovo,
                     DataAlteracao = agora
                 });
+
                 funcionarioExistente.CargoId = funcionario.CargoId;
             }
 
@@ -131,6 +160,7 @@ namespace RH_Backend.Controllers
                     ValorNovo = funcionario.DataAdmissao.ToString("yyyy-MM-dd"),
                     DataAlteracao = agora
                 });
+
                 funcionarioExistente.DataAdmissao = funcionario.DataAdmissao;
             }
 
@@ -144,6 +174,7 @@ namespace RH_Backend.Controllers
                     ValorNovo = funcionario.Ativo.ToString(),
                     DataAlteracao = agora
                 });
+
                 funcionarioExistente.Ativo = funcionario.Ativo;
             }
 
@@ -156,12 +187,11 @@ namespace RH_Backend.Controllers
                 await _appDbContext.SaveChangesAsync();
             }
 
-            return Ok();
+            return Ok(funcionario);
         }
 
-
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFuncionario(int id)
+        public async Task<ActionResult<Funcionario>> Delete(int id)
         {
             var funcionarioExistente = await _appDbContext.Funcionarios.FindAsync(id);
 
@@ -169,7 +199,7 @@ namespace RH_Backend.Controllers
 
             _appDbContext.Funcionarios.Remove(funcionarioExistente);
             await _appDbContext.SaveChangesAsync();
-            return Ok();
+            return Ok(funcionarioExistente);
         }
     }
 }
