@@ -46,7 +46,9 @@ namespace RH_Backend.Controllers
         [HttpPost]
         public async Task<ActionResult<Ferias>> Post(FeriasPostDto dto)
         {
-            if (!await _context.Funcionarios.AnyAsync(f => f.Id == dto.FuncionarioId))
+            var funcionario = await _context.Funcionarios.FindAsync(dto.FuncionarioId);
+
+            if (funcionario == null)
                 return BadRequest("Funcionário não encontrado.");
 
             var ferias = new Ferias
@@ -59,7 +61,7 @@ namespace RH_Backend.Controllers
             _context.Ferias.Add(ferias);
             await _context.SaveChangesAsync();
 
-            return Ok(ferias);
+            return Ok($"Férias de ${funcionario.Nome} foram cadastradas com sucesso.");
         }
 
         [HttpPut]
@@ -68,7 +70,9 @@ namespace RH_Backend.Controllers
             var ferias = await _context.Ferias.FindAsync(dto.Id);
             if (ferias == null) return NotFound();
 
-            if (!await _context.Funcionarios.AnyAsync(f => f.Id == dto.FuncionarioId))
+            var funcionario = await _context.Funcionarios.FindAsync(dto.FuncionarioId);
+
+            if (funcionario == null)
                 return BadRequest("Funcionário não encontrado.");
 
             ferias.DataInicio = dto.DataInicio;
@@ -77,7 +81,7 @@ namespace RH_Backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(ferias);
+            return Ok($"Férias de {funcionario.Nome} foram atualizadas com sucesso.");
         }
 
         [HttpDelete("{id}")]
