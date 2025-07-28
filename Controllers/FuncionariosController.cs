@@ -5,6 +5,9 @@ using RH_Backend.Data;
 using RH_Backend.DTO;
 using RH_Backend.Models;
 
+using QuestPDF.Helpers;
+using System.Globalization;
+
 namespace RH_Backend.Controllers
 {
     [Produces("application/json")]
@@ -203,6 +206,7 @@ namespace RH_Backend.Controllers
             return Ok(funcionarioExistente);
         }
 
+
         [HttpGet("Relatorio")]
         [Produces("application/pdf")]
         public async Task<IActionResult> GerarRelatorioFuncionarios()
@@ -215,40 +219,62 @@ namespace RH_Backend.Controllers
             {
                 container.Page(page =>
                 {
-                    page.Margin(20);
-                    page.Header().Text("Relatório de Funcionários").FontSize(20).Bold();
-                    page.Content().Table(table =>
+                    page.Margin(30);
+                    page.Size(PageSizes.A4);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(12));
+
+                    page.Header().Row(row =>
+                    {
+                        row.RelativeColumn().Text("Relatório de Funcionários")
+                            .FontSize(20).Bold().FontColor(Colors.Blue.Darken2);
+                        row.ConstantColumn(100).Text(DateTime.Now.ToString("dd/MM/yyyy HH:mm"))
+                            .FontSize(10).AlignRight().FontColor(Colors.Grey.Darken1);
+                    });
+
+                    page.Content().PaddingVertical(10).Table(table =>
                     {
                         table.ColumnsDefinition(columns =>
                         {
-                            // Nome
-                            columns.RelativeColumn(2);
-                            // Cargo
-                            columns.RelativeColumn(2);
-                            // Data
-                            columns.RelativeColumn(2);
-                            // Salário
-                            columns.RelativeColumn(2);
-                            // Status
-                            columns.RelativeColumn(1);
+                            columns.RelativeColumn(2); // Nome
+                            columns.RelativeColumn(2); // Cargo
+                            columns.RelativeColumn(2); // Data Admissão
+                            columns.RelativeColumn(2); // Salário
+                            columns.RelativeColumn(1); // Status
                         });
 
+                        // Cabeçalho da tabela
                         table.Header(header =>
                         {
-                            header.Cell().Text("Nome").Bold();
-                            header.Cell().Text("Cargo").Bold();
-                            header.Cell().Text("Data Admissão").Bold();
-                            header.Cell().Text("Salário").Bold();
-                            header.Cell().Text("Status").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Nome").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Cargo").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Data Admissão").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Salário").Bold();
+                            header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Status").Bold();
                         });
 
+                        // Linhas
+                        int index = 0;
                         foreach (var f in funcionarios)
                         {
-                            table.Cell().Text(f.Nome);
-                            table.Cell().Text(f.Cargo?.Nome ?? "N/A");
-                            table.Cell().Text(f.DataAdmissao.ToString("dd/MM/yyyy"));
-                            table.Cell().Text(f.Cargo?.Salario.ToString("C", new System.Globalization.CultureInfo("pt-BR")));
-                            table.Cell().Text(f.Ativo ? "Ativo" : "Inativo");
+                            var background = index++ % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
+
+                            table.Cell().Background(background).Padding(5).Text(f.Nome);
+                            table.Cell().Background(background).Padding(5).Text(f.Cargo?.Nome ?? "N/A");
+                            table.Cell().Background(background).Padding(5).Text(f.DataAdmissao.ToString("dd/MM/yyyy"));
+                            table.Cell().Background(background).Padding(5).Text(f.Cargo?.Salario.ToString("C", new CultureInfo("pt-BR")));
+                            table.Cell().Padding(5).AlignCenter().Element(container =>
+                            {
+                                container
+                                    .Background(f.Ativo ? Colors.Green.Lighten3 : Colors.Red.Lighten3)
+                                    .Padding(5)
+                                    .AlignCenter()
+                                    .Text(f.Ativo ? "Ativo" : "Inativo")
+                                    .FontColor(f.Ativo ? Colors.Green.Darken3 : Colors.Red.Darken3)
+                                    .SemiBold()
+                                    .FontSize(10);
+                            });
+
                         }
                     });
                 });
