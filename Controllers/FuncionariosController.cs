@@ -194,6 +194,30 @@ namespace RH_Backend.Controllers
             return Ok(funcionario);
         }
 
+        [HttpPatch("AlterarStatus/{id}")]
+        public async Task<ActionResult> AlterarStatusFuncionario(int id)
+        {
+            var funcionarioExistente = await _appDbContext.Funcionarios.FindAsync(id);
+            if (funcionarioExistente == null) return NotFound();
+
+            bool status = !funcionarioExistente.Ativo;
+
+            var historico = new HistoricoFuncionario
+            {
+                FuncionarioId = funcionarioExistente.Id,
+                CampoAlterado = "Ativo",
+                ValorAntigo = funcionarioExistente.Ativo.ToString(),
+                ValorNovo = status.ToString(),
+                DataAlteracao = DateTime.Now
+            };
+
+            funcionarioExistente.Ativo = status;
+            _appDbContext.HistoricoFuncionarios.Add(historico);
+            await _appDbContext.SaveChangesAsync();
+
+            return Ok($"O funcionário {funcionarioExistente.Nome} foi {(status ? "ativado" : "inativado")} com sucesso.");
+        }
+
         [HttpDelete("{id}")]
         public async Task<ActionResult<Funcionario>> Delete(int id)
         {
@@ -226,9 +250,9 @@ namespace RH_Backend.Controllers
 
                     page.Header().Row(row =>
                     {
-                        row.RelativeColumn().Text("Relatório de Funcionários")
+                        row.RelativeItem().Text("Relatório de Funcionários")
                             .FontSize(20).Bold().FontColor(Colors.Blue.Darken2);
-                        row.ConstantColumn(100).Text(DateTime.Now.ToString("dd/MM/yyyy HH:mm"))
+                        row.ConstantItem(100).Text(DateTime.Now.ToString("dd/MM/yyyy HH:mm"))
                             .FontSize(10).AlignRight().FontColor(Colors.Grey.Darken1);
                     });
 
