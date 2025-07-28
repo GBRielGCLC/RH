@@ -69,7 +69,7 @@ Antes de rodar o sistema, certifique-se de que os seguintes componentes estão i
 
 ## 🗃️ Considerações Sobre o Banco de Dados
 
-- O sistema utiliza **PostgreSQL** como sistema de gerenciamento de banco de dados.
+- O sistema utiliza **SQL Server Management Studio 20** como sistema de gerenciamento de banco de dados.
 - O **Entity Framework Core** é responsável pelo controle do *schema* e das *migrations*.
 
 ### Comandos úteis:
